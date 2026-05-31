@@ -1,0 +1,474 @@
+---
+name: mpat4-relay
+description: "Skill de trabajo colaborativo relay para MPAT4 — Infraestructura Cognitiva Distribuida. Activar SIEMPRE cuando el alumno diga 'continuar', 'continuar con mpat4', 'seguimos', 'siguiente pendiente mpat4', 'retomar mpat4', o al inicio de sesión si hay archivos RELAY_*.md o contratos MPAT4 en contexto. La skill accede a Google Drive carpeta MPAT4, lee el RELAY_POINTER activo, determina el módulo de menor prioridad pendiente, genera los artefactos correspondientes (contrato, schema, implementación o relay), los guarda en Drive con firma del alumno, y evalúa si continuar o traspasar. NUNCA sobreescribe versiones anteriores. NUNCA escribe código antes de tener contrato aprobado. NUNCA guarda en formato Google Doc. SIEMPRE actualiza RELAY_POINTER al cerrar sesión. Usar aunque el usuario no mencione la skill explícitamente si el contexto es claramente de trabajo MPAT4."
+---
+
+# MPAT4 — Skill de Trabajo Relay Colaborativo · V4_04
+## ⛔ NUNCA sobreescribir — siempre archivo nuevo con versión
+## ⛔ NUNCA código antes de contrato aprobado
+## ⛔ NUNCA módulo sin schema Pydantic V3
+## ⛔ NUNCA guardar en formato Google Doc (.gdoc)
+## ⛔ NUNCA Docker — solo unikernels (NanoVMs / Unikraft / Firecracker)
+## ⛔ NUNCA cerrar sesión sin actualizar RELAY_POINTER y generar RELAY_NNN
+## ⛔ NUNCA relay sin las 10 secciones obligatorias
+
+---
+
+## Propósito
+
+MPAT4 es una Infraestructura Cognitiva Distribuida construida bimestre a
+bimestre por alumnos en modo relay. No es un chatbot. No es un wrapper de LLM.
+Es un sistema operativo cognitivo distribuido.
+
+Un alumno dice "continuar con mpat4". La skill hace todo lo demás:
+lee el RELAY_POINTER en Drive, determina el módulo a trabajar, verifica
+qué contratos y schemas existen, genera el artefacto correspondiente, lo guarda
+en Drive con firma del alumno, actualiza el RELAY_POINTER y evalúa si continuar.
+
+**El estado vive en Drive, no en la memoria de Claude.**
+
+---
+
+## Configuración requerida (una sola vez por alumno)
+
+El alumno debe tener el servidor MCP `Google Drive` activo en su sesión de Claude.
+
+Carpeta raíz del proyecto **MPAT4**:
+```
+FOLDER_ID_ROOT: 1gQNxSlp92RpVIfzvyU66czHxLv1sqSqI
+```
+
+---
+
+## Regla de formato de archivos — INVIOLABLE
+
+```
+⛔ NUNCA crear archivos en formato Google Doc (.gdoc)
+⛔ NUNCA usar mimeType: application/vnd.google-apps.document
+⛔ NUNCA omitir disableConversionToGoogleType: true
+
+✅ SOLO formatos permitidos:
+   .skill  → contentMimeType: "text/plain" + disableConversionToGoogleType: true
+   .md     → contentMimeType: "text/plain" + disableConversionToGoogleType: true
+   .py     → contentMimeType: "text/x-python" + disableConversionToGoogleType: true
+   .yaml   → contentMimeType: "text/plain" + disableConversionToGoogleType: true
+   .json   → contentMimeType: "application/json" + disableConversionToGoogleType: true
+   .toml   → contentMimeType: "text/plain" + disableConversionToGoogleType: true
+
+Parámetro obligatorio en TODA llamada create_file a Drive:
+   disableConversionToGoogleType: true
+
+⚠ El error "No approval received" al guardar un .py con código complejo
+   se resuelve dividiendo el archivo en secciones y guardando cada una.
+   Si persiste, guardar el contenido en un .md provisional y avisar al alumno.
+```
+
+---
+
+## IDs de carpetas Drive — MPAT4 (verificados 2026-05-13)
+
+| Carpeta | ID |
+|---|---|
+| MPAT4 (raíz) | `1gQNxSlp92RpVIfzvyU66czHxLv1sqSqI` |
+| contracts/ | `1a9-q9pqldwmgoVB9nd0SC3a2FGAQPgZ1` |
+| schemas/ | `1qffIdQ01UCXx9L00UuJRehGuyp2tlJeH` |
+| event_bus/ | `1bzk-39gmCPe70nGmZXkVNR9bQWBwBE18` |
+| governance_engine/ | `1mLcTCsNbiZHkgHQNZiLzZ8IoW5fxcY5J` |
+| memory_fabric/ | `1ovXyzv6zkDu4OGW7JDLJXzD9M9uB2bXl` |
+| session_scheduler/ | `1zAYhSy54VLSvQ3HBpa6cSMtkVCW5fb2m` |
+| runtimes/ | `1DA-xFa780YrUZp3tAVqt8B8a1ApxLaP8` |
+| observability/ | `1EQYjLU2oCg_acPG67zw0mdNz7J2168uP` |
+| agent_registry/ | `11u7yEBhHjjOnEIP5-C5zvHDZsq3_3mNO` |
+| cognition/ | `1K1dR78NjVNT70g6VTTWv4LZxFsnbnrJU` |
+| investigaciones/ | `1Kig0Oxe0s4CvDSi6x1GrmW3xdLq7CYuo` |
+| resoluciones/ | `16VKDIKpDO8sWa6NxI3sGFbWlN3QHP8fj` |
+| relay/ | `1c3CP8dM19BGyjOlI8TadmyL1KtV_Tlte` |
+| estado/ | `1VFhCNqvZAfCL2lpZ_M5zPCqiMpW2h6Gw` |
+| docs/ | `1FlL7ACOo7o-KANItFWIBuJ62ULIHF_Oz` |
+
+---
+
+## Estructura de archivos en Drive · MPAT4
+
+```
+MPAT4/                          ← 1gQNxSlp92RpVIfzvyU66czHxLv1sqSqI
+│
+├── RELAY_POINTER_V4.md         ← LEER PRIMERO — dice cuál relay está activo
+├── LEER_PRIMERO_MPAT4_DOCUMENTACION_COMPLETA.md
+├── EVALUACION_ESTRUCTURA_MPAT4_*.md
+├── README_MPAT4.md
+├── SKILL.skill                 ← este archivo (V4_04)
+│
+├── contracts/                  ← PRIORIDAD 1
+│   └── ECS_CONTRACT_V1.md      ← COMPLETO ✓
+│
+├── schemas/                    ← PRIORIDAD 2
+│   ├── ecs_schema.py           ← COMPLETO ✓
+│   ├── event_schema.py         ← COMPLETO ✓
+│   └── event_bus_schema.py     ← COMPLETO ✓ (rescatado 2026-05-13)
+│
+├── event_bus/                  ← PRIORIDAD 3
+│   ├── EVENT_BUS_CONTRACT_V4_01.md  ← COMPLETO ✓
+│   └── event_bus.py            ← PENDIENTE — próxima sesión
+│
+├── governance_engine/          ← PRIORIDAD 4 — TODO PENDIENTE
+│   └── config_policy.yaml      ← debe crearse aquí (requerido por event_bus)
+│
+├── memory_fabric/              ← PRIORIDAD 5 — TODO PENDIENTE
+├── session_scheduler/          ← PRIORIDAD 6 — TODO PENDIENTE
+├── runtimes/                   ← PRIORIDAD 7 — TODO PENDIENTE
+├── observability/              ← PRIORIDAD 8 — TODO PENDIENTE
+├── agent_registry/             ← PRIORIDAD 9 — TODO PENDIENTE
+├── cognition/                  ← PRIORIDAD 10 — TODO PENDIENTE
+│
+├── investigaciones/            ← INV_NNN_TEMA.md
+├── resoluciones/               ← RES_NNN_DECISION.md
+├── relay/                      ← RELAY_NNN.md  ← leer al inicio
+├── estado/                     ← STATUS_NNN_HITO.md
+└── docs/                       ← documentación general
+```
+
+---
+
+## Orden de prioridad de módulos — INVIOLABLE
+
+| Prioridad | Módulo | Contrato | Schema | Implementado |
+|---|---|---|---|---|
+| 1 | contracts/ | ECS_CONTRACT_V1.md ✓ | — | — |
+| 2 | schemas/ | — | ecs_schema.py ✓ · event_schema.py ✓ · event_bus_schema.py ✓ | — |
+| 3 | event_bus/ | EVENT_BUS_CONTRACT_V4_01.md ✓ | event_bus_schema.py ✓ | **PENDIENTE** |
+| 4 | governance_engine/ | PENDIENTE | PENDIENTE | PENDIENTE |
+| 5 | memory_fabric/ | PENDIENTE | PENDIENTE | PENDIENTE |
+| 6 | session_scheduler/ | PENDIENTE | PENDIENTE | PENDIENTE |
+| 7 | runtimes/ | PENDIENTE | PENDIENTE | PENDIENTE |
+| 8 | observability/ | PENDIENTE | PENDIENTE | PENDIENTE |
+| 9 | agent_registry/ | PENDIENTE | PENDIENTE | PENDIENTE |
+| 10 | cognition/ | PENDIENTE | PENDIENTE | PENDIENTE |
+
+> La skill actualiza esta tabla en cada relay basándose en el estado real de Drive.
+
+---
+
+## Flujo relay — INICIO DE SESIÓN
+
+Cuando el alumno dice "continuar con mpat4":
+
+```
+PASO 0 — IDENTIFICACIÓN
+  Preguntar: "¿Tu nombre o email para registrar tu autoría?"
+  Guardar como ALUMNO_ID para firmar todos los archivos de esta sesión.
+
+PASO 1 — LEER ESTADO ACTUAL
+  Buscar RELAY_POINTER_V4.md en raíz (o el más reciente si hay varios)
+  → dice cuál RELAY_NNN.md está activo ahora mismo
+  Leer ese RELAY_NNN.md en relay/ → estado exacto del sistema
+  Informar al alumno: "Sesión MPAT4 iniciada. Relay activo: RELAY_[NNN]"
+
+PASO 2 — VERIFICAR ESTADO REAL EN DRIVE
+  Para el módulo indicado en el relay activo:
+  → Verificar en Drive si existe: contrato / schema / implementación
+  → NO confiar en el relay anterior — verificar siempre con list_files
+  → Si hay discrepancia entre relay y Drive: creer a Drive, documentarlo
+
+PASO 3 — CARGAR SOLO LO NECESARIO
+  Leer SOLO los archivos del módulo activo + contratos previos relacionados
+  NO cargar módulos no relacionados: economía de tokens
+  Prioridad de lectura:
+    1. RELAY_POINTER_V4.md (cuál módulo trabajar)
+    2. RELAY_NNN.md activo (estado exacto + tarea)
+    3. Contrato del módulo activo
+    4. Schemas relacionados
+
+PASO 4 — GENERAR EL ARTEFACTO
+  Según el estado del módulo elegido:
+  → Sin contrato: generar CONTRACT_V1.md con las 10 secciones obligatorias
+  → Sin schema: generar schema.py con Pydantic V3 basado en el contrato
+  → Sin implementación: generar el módulo Python con invariantes documentadas
+  → Todo completo: generar investigación o resolución si hay decisiones pendientes
+
+PASO 5 — GUARDAR EN DRIVE
+  Guardar ÚNICAMENTE en la carpeta del módulo activo + relay/
+  Encabezado obligatorio en CADA archivo:
+    # [NOMBRE]
+    ## Autor: [ALUMNO_ID] · [FECHA]
+    ## Módulo: [módulo] · Versión: V4_01
+    ## Sistema: MPAT4 — Infraestructura Cognitiva Distribuida
+  ⛔ NUNCA sobreescribir — siempre archivo nuevo con versión incrementada
+  ⛔ NUNCA escribir en carpetas que no son del módulo activo
+
+PASO 6 — CERRAR SESIÓN CORRECTAMENTE
+  6a. Generar RELAY_NNN+1.md en relay/ con las 10 secciones obligatorias
+  6b. Actualizar tabla de estado en el relay con el estado REAL de Drive
+  6c. Crear RELAY_POINTER_V4_ACTUALIZADO_[FECHA].md en raíz
+      (no sobreescribir el anterior — avisar al coordinador que lo reemplace)
+  6d. Generar prompt para el próximo alumno (ver sección PROTOCOLO DE TRASPASO)
+  6e. Evaluar tokens:
+      > 60% → continuar con la siguiente tarea del mismo módulo
+      < 60% → preparar relay
+      < 40% → GENERAR RELAY INMEDIATAMENTE. Nada más.
+```
+
+---
+
+## Reglas de alcance por módulo — CRÍTICO
+
+Cada sesión tiene UN módulo activo. Solo se escribe en su carpeta.
+**Escribir en otra carpeta sin que el relay lo autorice = violación grave.**
+
+| Módulo activo | Puede escribir en | Siempre permitido |
+|---|---|---|
+| contracts | contracts/ | relay/ · resoluciones/ |
+| schemas | schemas/ | relay/ · resoluciones/ |
+| event_bus | event_bus/ | relay/ · resoluciones/ |
+| governance_engine | governance_engine/ | relay/ · resoluciones/ |
+| memory_fabric | memory_fabric/ | relay/ · resoluciones/ |
+| session_scheduler | session_scheduler/ | relay/ · resoluciones/ |
+| runtimes | runtimes/ | relay/ · resoluciones/ |
+| observability | observability/ | relay/ · resoluciones/ |
+| agent_registry | agent_registry/ | relay/ · resoluciones/ |
+| cognition | cognition/ | relay/ · resoluciones/ |
+
+> Excepción permitida: si una sesión rescata un archivo de sesión anterior que
+> falló al guardarse (error "No approval received"), puede escribir en la carpeta
+> original del archivo rescatado. Documentarlo en el relay de esta sesión.
+
+---
+
+## Estructura obligatoria de un RELAY — 10 SECCIONES — SIN EXCEPCIÓN
+
+```
+# RELAY_NNN.md
+## Autor: [ALUMNO_ID] · [FECHA]
+## Módulo: [módulo] · Sistema: MPAT4
+
+[APERTURA_RELAY_NNN] — módulo, prioridad, situación de la sesión
+[INFO_ALUMNO] — qué leer antes de empezar, qué NO tocar
+
+1. OBJETIVO DE ESTA SESIÓN
+   Qué se hizo, no qué se planeó.
+
+2. ARTEFACTOS CREADOS
+   Tabla: archivo | carpeta | ID Drive | estado
+
+3. SCHEMAS DEFINIDOS
+   Tabla: archivo | clases principales | ID Drive
+   Con detalle de cada clase y sus invariantes.
+
+4. EVENTOS DEFINIDOS
+   Tabla: tipo_evento | clase | cuándo se emite
+
+5. DECISIONES ARQUITECTURALES
+   DEC-NNN: decisión → razón → consecuencia
+
+6. RIESGOS DETECTADOS
+   RIESGO-NNN: descripción → impacto → mitigación
+   Clasificar: Activo | Heredado | Resuelto
+
+7. PRÓXIMA PRIORIDAD
+   Módulo exacto + primera tarea concreta + precondiciones
+
+8. ARCHIVOS CRÍTICOS A LEER PRIMERO
+   Lista ordenada con IDs de Drive
+
+9. INVARIANTES — NO ROMPER
+   Lista de invariantes que el siguiente alumno NO puede violar
+
+10. DEUDA TÉCNICA
+    Qué quedó incompleto, por qué, y quién debe resolverlo
+
+[TRASPASO → RELAY_NNN+1]
+  Mensaje listo para copiar al grupo con: módulo trabajado,
+  artefactos creados, próxima tarea, prompt de inicio.
+```
+
+**El relay es un contrato de traspaso, no un resumen.**
+Si el alumno siguiente tiene que deducir algo, el relay falló.
+
+---
+
+## Estructura obligatoria de un CONTRATO — 10 SECCIONES
+
+```
+# [NOMBRE]_CONTRACT_V1.md
+## Módulo: [nombre]
+## Autor: [ALUMNO_ID] · [FECHA]
+
+1. OBJETIVO
+2. MOTIVACIÓN ARQUITECTURAL (por qué existe este módulo)
+3. CAMPOS / INTERFACE (con tabla de tipos)
+4. EVENTOS QUE EMITE (con payload mínimo)
+5. EVENTOS QUE CONSUME
+6. FLUJO OPERACIONAL (paso a paso numerado)
+7. INVARIANTES (INV-XXX-NNN: descripción)
+8. RIESGOS (tabla: riesgo | impacto | mitigación)
+9. OBSERVABILIDAD (Redis namespaces + OTel spans + métricas)
+10. SIGUIENTE ALUMNO (tarea concreta + archivos a leer + qué no tocar)
+```
+
+---
+
+## Protocolo de traspaso — RELAY_POINTER + PROMPT
+
+Al cerrar sesión, generar SIEMPRE estos dos artefactos:
+
+**Artefacto 1 — RELAY_POINTER actualizado:**
+```
+RELAY_POINTER_V4_ACTUALIZADO_[FECHA].md (en raíz MPAT4)
+Contenido mínimo:
+- Tabla de relays con estado REAL
+- Relay activo actual
+- Estado real de módulos (verificado en Drive, no de memoria)
+- Problemas estructurales detectados
+- IDs completos de carpetas
+```
+
+**Artefacto 2 — Prompt para el próximo alumno:**
+```
+Continuar con MPAT4.
+
+Soy el alumno de la sesión RELAY_[NNN+1].
+El relay activo es RELAY_[NNN].md en Drive.
+
+ESTADO ACTUAL (auditado en RELAY_[NNN]):
+[tabla completa de módulos con IDs]
+
+TAREA CONCRETA:
+Crear [archivo] en [carpeta/] — [descripción exacta]
+
+CARPETA DESTINO: [carpeta/] ID Drive: [ID]
+
+ANTES DE ESCRIBIR CÓDIGO:
+1. Leer [CONTRATO] (ID: [ID])
+2. Leer [SCHEMA] (ID: [ID])
+3. Solo entonces comenzar.
+
+Al terminar, generar RELAY_[NNN+1].md en relay/
+con las 10 secciones obligatorias.
+
+Mi nombre/email para firmar los artefactos: [COMPLETAR]
+```
+
+---
+
+## Los 12 principios — NUNCA violar
+
+| # | Principio | Implicación práctica |
+|---|---|---|
+| P1 | Modularidad total | Ningún módulo llama directamente a otro. Solo via event_bus |
+| P2 | Serializabilidad | Todo estado debe poder guardarse y recuperarse en Redis |
+| P3 | Zero Trust | Todo se autentica, todo se valida, todo se registra |
+| P4 | Nada hardcodeado | Todo parámetro en config_policy.yaml o variables de entorno |
+| P5 | Toda decisión auditable | Si no hay log, no ocurrió |
+| P6 | Degradación graceful | Timeout → cold start, no crash |
+| P7 | Budget inviolable | budget_spent >= budget_total → el agente para |
+| P8 | Policy first | La gobernanza define lo que el código puede hacer |
+| P9 | Event driven | Módulos comunicados por eventos, no por llamadas directas |
+| P10 | Relay cognitivo | El ECS debe ser serializable siempre |
+| P11 | Observabilidad total | El sistema puede explicar cualquier decisión que tomó |
+| P12 | Cognición persistente | El conocimiento sobrevive a los reinicios |
+
+---
+
+## Stack tecnológico
+
+| Tecnología | Versión | Uso |
+|---|---|---|
+| Python | 3.14 No-GIL | Lenguaje principal |
+| Pydantic | V3 | Validación de schemas — obligatorio |
+| FastAPI | 0.115+ | API interna |
+| gRPC / ConnectRPC | — | Transporte interno |
+| Redis | 7+ | Estado distribuido |
+| **NanoVMs (OPS)** | — | **Runtime dev y producción** |
+| **Unikraft** | — | **Agentes con dependencias específicas** |
+| **Firecracker** | — | **Producción cloud AWS** |
+| ~~Docker~~ | — | **PROHIBIDO. Violación de P3 y P7.** |
+| OpenTelemetry | — | Observabilidad |
+| MCP | 2025 | Protocolo universal de herramientas |
+| A2A | v1.0 | Colaboración entre agentes |
+| Gemma 4 E2B/E4B | Apache 2.0 | Audio nativo + MTP 3x velocidad |
+| min_memory_mb Python | 128 | **NUNCA menos. GC de CPython falla por debajo.** |
+
+---
+
+## Reglas de calidad aprendidas en sesiones reales
+
+| Regla | Origen | Consecuencia si se viola |
+|---|---|---|
+| Nunca sobreescribir versiones | Fundacional | Pérdida de historial — detener |
+| Siempre firmar con ALUMNO_ID y fecha | Fundacional | Archivo inválido, autoría desconocida |
+| Código siempre después del contrato | Fundacional | Sin contrato = sin código |
+| Schema siempre antes de la implementación | Fundacional | Sin schema = sin implementación |
+| Solo cargar archivos del módulo activo | Economía tokens | Contexto contaminado, tokens desperdiciados |
+| Relay antes del 40% de tokens | Fundacional | El sistema queda sin traspaso |
+| NUNCA usar Docker | P3 + P7 | Detener inmediatamente |
+| NUNCA relay sin las 10 secciones | Aprendido en sesión 3 | El alumno siguiente no puede arrancar |
+| SIEMPRE actualizar RELAY_POINTER al cerrar | Aprendido en sesión 3 | El pointer queda desactualizado |
+| Verificar Drive antes de generar | Aprendido en sesión 3 | Se duplican artefactos ya existentes |
+| Si "No approval received": dividir el archivo | Aprendido en sesión 3 | El archivo queda sin guardar — se pierde trabajo |
+| El relay es un contrato, no un resumen | Aprendido en sesión 3 | El alumno siguiente tiene que deducir |
+| Schemas de módulos van en schemas/ no en el módulo | Aprendido en sesión 3 | Imports cíclicos, violación de P1 |
+| RELAY_POINTER en raíz, relays en relay/ | Fundacional | Desorganización, alumno no encuentra el estado |
+| event_bus_schema.py en schemas/, no en event_bus/ | DEC-005 | Acoplamiento, violación de P1 |
+
+---
+
+## Errores comunes y su solución
+
+**Error: "No approval received" al guardar .py con código largo**
+Causa: Drive rechaza archivos con cierto contenido o tamaño en un solo request.
+Solución: Dividir el contenido en secciones. Guardar cada sección por separado
+y combinar offline. Si persiste: guardar como .md provisional con nota en el relay.
+
+**Error: RELAY_POINTER desactualizado**
+Causa: El alumno anterior no actualizó el pointer al cerrar su sesión.
+Solución: Leer todos los RELAY_NNN.md en relay/ y encontrar el de número más alto.
+Ese es el activo. Crear RELAY_POINTER_ACTUALIZADO antes de empezar a trabajar.
+
+**Error: Dos versiones del mismo relay (RELAY_001.md y RELAY_001_CONTRACTS_V4.md)**
+Causa: Una sesión creó un relay simple y otra lo reemplazó con uno completo.
+Solución: El de formato completo (10 secciones) es el canónico. Avisar al coordinador.
+
+**Error: Relay sin IDs de Drive**
+Causa: El alumno escribió nombres de archivos pero no sus IDs.
+Efecto: El alumno siguiente no puede encontrar los archivos eficientemente.
+Solución: Todo relay debe incluir IDs en la tabla de artefactos.
+
+**Error: Módulo trabajado sin verificar estado real en Drive**
+Causa: El alumno confió en el relay anterior sin verificar.
+Efecto: Puede duplicar trabajo ya hecho o perder trabajo existente.
+Solución: Siempre list_files en la carpeta del módulo antes de generar cualquier artefacto.
+
+---
+
+## Novedades V4 que el alumno debe conocer
+
+1. **ECS central** — Event-Cognitive State: unidad que viaja entre módulos
+2. **MCP universal** — todos los canales se normalizan via MCP
+3. **A2A v1.0** — agentes de distintos frameworks pueden colaborar
+4. **Unikernels ÚNICOS** — NanoVMs (dev/prod), Unikraft, Firecracker. Docker NO existe.
+5. **Python 3.14 No-GIL** — paralelismo real: múltiples ECS simultáneos
+6. **Pydantic V3** — validación C-level para todos los schemas
+7. **Policy first** — config_policy.yaml governa todo lo que el código puede hacer
+8. **Explainability3D** — 3 niveles de explicación de cada decisión del agente
+9. **PredictiveEmpathy** — detecta frustración/confusión/fatiga por señales del ECS
+10. **Budget inviolable** — teardown inmediato al agotar budget_tokens_total
+11. **Gemma 4 MTP** — hasta 3x inferencia más rápida. E2B/E4B soportan audio nativo.
+12. **cognitive_kernel ≠ cognition** — kernel=cómo existe el agente · cognition=cómo piensa
+
+---
+
+## Historial de versiones del skill
+
+| Versión | Fecha | Autor | Cambios |
+|---|---|---|---|
+| V4_01 | 2026-05-12 | cursos.agt.ia | Versión inicial MPAT4 |
+| V4_02 | 2026-05-12 | ariel.garcia.traba | Formato .skill, regla Google Doc, tabla de prioridades |
+| V4_03 | 2026-05-12 | ariel.garcia.traba | Unikernels obligatorios, Docker prohibido, Gemma 4 MTP, cognitive_kernel vs cognition |
+| V4_04 | 2026-05-13 | andrea.proyect | Relay 10 secciones obligatorias, RELAY_POINTER update protocol, regla "No approval received", errores comunes documentados, verificación Drive antes de generar, tabla de estado real, prompt próximo alumno estandarizado |
+
+---
+
+*SKILL.skill · V4_04 · MPAT4 · 2026-05-13*
+*Drive: 1gQNxSlp92RpVIfzvyU66czHxLv1sqSqI*
+*Relay activo al generar este skill: RELAY_003.md*
+*que has usado el formato de razonamiento adaptado por AGT*

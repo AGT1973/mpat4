@@ -1,0 +1,212 @@
+---
+name: skill-trabajo-mpat4
+version: V1_00
+description: >
+  Skill de trabajo colaborativo MPAT4 con protocolo de conciliación de fuentes.
+  Activar con CUALQUIER frase de trabajo del proyecto: '.', 'continuar', 'seguimos',
+  'retomar mpat4', 'siguiente pendiente', 'tomar tarea', 'hay tareas huerfanas',
+  'migrar', 'continuar migracion', 'investigar tecnologia', 'tech radar',
+  'implementar modulo', 'escribir codigo', 'implementar en rust', 'bridge ffi',
+  'hay conflicto entre fuentes', 'conciliar', 'tabla por fuente', 'hay un INV'.
+  Amplía todas las skills del sistema con el protocolo de conciliación de información:
+  NUNCA votar entre fuentes, NUNCA simplificar, SIEMPRE razonar explícitamente,
+  SIEMPRE tabla por fuente cuando hay conflicto. Si se pierde información, conciliar
+  desde Drive. El '.' solo continúa sin informar para ahorrar tokens.
+requires:
+  - Google Drive MCP (conector oficial Claude.ai)
+---
+
+# skill-trabajo-mpat4 — Protocolo de Trabajo y Conciliación · V1_00
+
+## ⛔ NUNCA votar entre fuentes — la mayoría no genera verdad técnica
+## ⛔ NUNCA simplificar — la información perdida puede ser irrecuperable
+## ⛔ NUNCA resolver un INV por mayoría — siempre tabla por fuente + razonamiento
+## ⛔ NUNCA operar desde memoria — Drive es la única fuente de verdad
+## ⛔ NUNCA guardar en formato Google Doc — siempre .md o .skill o .py
+## ⛔ NUNCA cerrar sin relay completo (10 secciones) + RELAY_POINTER + prompt próximo
+## ✅ SIEMPRE reevaluar — el estado en el relay puede no coincidir con Drive
+## ✅ SIEMPRE razonar explícitamente — no seguir mecánicamente
+
+---
+
+## COMPORTAMIENTO ESPECIAL — PUNTO SOLO
+
+```
+SI el alumno escribe únicamente "." + Enter:
+  → Continuar con la tarea anterior SIN informar
+  → Sin saludar, sin resumir, sin preguntar
+  → Trabajar directamente, ahorrando tokens
+  → Solo interrumpir si hay un bloqueo técnico real que requiere decisión del alumno
+```
+
+---
+
+## PROPÓSITO DE ESTA SKILL
+
+Esta skill amplía todas las demás skills del sistema MPAT4 con dos capacidades
+que ninguna otra skill documenta explícitamente:
+
+1. **Protocolo de conciliación de fuentes** — qué hacer cuando Drive tiene
+   información contradictoria entre archivos, y por qué el voto de mayoría
+   es un error técnico, no una solución.
+
+2. **Razonamiento explícito sobre INV** — por qué un invariante documentado
+   en una sola fuente puede ser más correcto que el mismo campo con valor
+   distinto en tres fuentes sin respaldo técnico.
+
+Este material es pedagógico. No simplificarlo es parte del diseño.
+
+---
+
+## MAPA DE SKILLS DEL SISTEMA
+
+| Skill | Trigger principal | Propósito |
+|---|---|---|
+| `mpat4-alumno` | `.` / `continuar` / cualquier frase | Bootstrap y router — carga la skill correcta |
+| `mpat4-relay` | `continuar con mpat4` / `retomar mpat4` | Relay general — contratos, schemas, impl |
+| `relay-lifecycle` | `tomar tarea` / `hay tareas huerfanas` | Ciclo de vida de tareas del grupo |
+| `mpat3-to-mpat4` | `migrar` / `continuar migracion` | Migración por lotes desde V3 |
+| `tech-research` | `investigar tecnologia` / `tech radar` | Investigación y evaluación de tecnologías |
+| `python-rust-production` | `implementar modulo` / `escribir codigo` | Producción de código Python/Rust |
+| `versionado-mpat` | `continuar` / `seguimos` | Relay MPAT V3 legacy — activo |
+| `skill-trabajo-mpat4` | `.` / `hay conflicto` / `conciliar` / `tabla por fuente` | Esta skill — conciliación y razonamiento |
+
+**Recuperación de información si hay pérdida:**
+```
+https://drive.google.com/drive/folders/1Y02GMJ9CPp4_qmDliZkKQr0mP28rFjv0
+```
+Todas las subcarpetas contienen versiones anteriores.
+Si hay duda sobre qué versión es canónica: leer todas, conciliar, no votar.
+
+---
+
+## REGLA CENTRAL — CONCILIACIÓN, NO VOTO
+
+### Por qué el voto de mayoría NO invalida un INV
+
+Un **INV** (Invariante) es una afirmación que el sistema garantiza siempre.
+No es una opinión. No es una preferencia.
+Es un contrato lógico del que dependen otros módulos.
+
+**Ejemplo concreto:**
+
+```
+Fuente A (RELAY_003.md, 2026-05-13):     min_memory_mb = 128
+Fuente B (CAPA_06_MASTER.md, 2026-05-10): min_memory_mb = 64
+Fuente C (README_INFRA.md, 2026-05-09):   min_memory_mb = 64
+```
+
+El voto de mayoría daría 64. Ese resultado sería un error técnico.
+
+**Razonamiento:**
+- El valor 128 está documentado con una nota técnica: CPython falla por debajo
+  de 128 MB en el ciclo de GC con múltiples ECS simultáneos.
+- Los valores 64 no tienen referencia técnica. Son anteriores y probablemente
+  copiados de una configuración base que no contemplaba el caso de uso MPAT4.
+- Dos fuentes incorrectas no superan a una fuente con evidencia.
+- La mayoría no genera verdad técnica. La trazabilidad sí.
+
+**La regla:**
+
+```
+SI hay conflicto entre fuentes sobre cualquier dato:
+  1. Documentar TODAS las fuentes y sus valores (tabla por fuente)
+  2. Razonar explícitamente sobre el origen probable de cada valor
+  3. Identificar cuál fuente tiene más evidencia técnica de respaldo
+  4. Si no hay evidencia suficiente: marcar como PENDIENTE_INV
+  5. NUNCA resolver por mayoría
+  6. NUNCA silenciar el conflicto
+  7. NUNCA asumir que la versión más nueva es la correcta
+```
+
+---
+
+## FORMATO OBLIGATORIO — TABLA POR FUENTE
+
+Cuando dos o más fuentes difieren en un dato, el documento que las concilia
+debe incluir esta tabla antes de cualquier conclusión:
+
+```markdown
+## Conciliación de fuentes — [CAMPO EN CONFLICTO]
+
+| Fuente | Valor | Fecha | Evidencia de respaldo | Confianza |
+|--------|-------|-------|-----------------------|-----------|
+| RELAY_003.md | 128 MB | 2026-05-13 | Nota técnica: GC CPython falla < 128 MB con ECS múltiples | ALTA |
+| CAPA_06_MASTER.md | 64 MB | 2026-05-10 | Sin referencia al motivo | BAJA |
+| README_INFRA.md | 64 MB | 2026-05-09 | Sin referencia al motivo | BAJA |
+
+**Razonamiento:**
+[Explicación explícita de por qué una fuente tiene más peso que las demás.]
+
+**Decisión:** [valor adoptado] · Fuente canónica: [archivo]
+**Estado:** RESUELTO
+```
+
+**Si no hay evidencia suficiente para resolver:**
+
+```markdown
+**Decisión:** PENDIENTE_INV — requiere verificación antes de usar en producción
+**Estado:** PENDIENTE_INV · Registrar en sección 10 (Deuda Técnica) del relay
+```
+
+---
+
+## FLUJO OPERATIVO DE CADA SESIÓN
+
+### PASO 0 — IDENTIFICACIÓN
+Buscar ALUMNO_ID en preferencias. Si existe: usar. Si no: preguntar una vez.
+⛔ No bloquear el trabajo por falta de identificación.
+
+### PASO 1 — LEER ESTADO REAL DESDE DRIVE
+Leer en orden: RELAY_POINTER → RELAY_NNN.md → WORK_INDEX.md → carpeta módulo activo.
+SI Drive difiere del relay: **Drive manda**.
+
+### PASO 2 — REEVALUAR ANTES DE PRODUCIR
+a) ¿El artefacto ya existe? → no duplicar
+b) ¿Existe contrato? → si no: generarlo primero
+c) ¿Existe schema Pydantic V3? → si no: antes de impl
+d) ¿Hay conflicto entre fuentes? → tabla por fuente obligatoria
+e) ¿Hay INV en conflicto? → tabla + razonamiento explícito
+
+### PASO 3 — PRODUCIR
+Sin contrato → CONTRACT_V1.md · Sin schema → schema.py en schemas/
+Sin impl → módulo Python/Rust con invariantes documentadas
+
+**Encabezado obligatorio:**
+```
+# [NOMBRE]
+## Autor: [ALUMNO_ID] · [FECHA]
+## Módulo: [módulo] · Versión: V4_0N
+## Sistema: MPAT4 — Infraestructura Cognitiva Distribuida
+```
+
+### PASO 4 — CIERRE (3 artefactos obligatorios)
+4a. RELAY_NNN+1.md en relay/ — 10 secciones completas
+4b. RELAY_POINTER en raíz — actualizado
+4c. PROMPT_PROXIMO_ALUMNO.md en docs/
+
+---
+
+## SECCIONES OBLIGATORIAS DEL RELAY (10)
+
+1. IDENTIFICACIÓN · 2. ESTADO AL INICIO · 3. TRABAJO REALIZADO
+4. INVARIANTES · 5. CONCILIACIONES RESUELTAS · 6. CONCILIACIONES PENDIENTES
+7. ARTEFACTOS GENERADOS · 8. ESTADO AL CIERRE · 9. PRÓXIMO PASO · 10. DEUDA TÉCNICA
+
+---
+
+## ECONOMÍA DE TOKENS
+
+```
+"." solo → continuar sin informar, sin saludar, sin resumir
+Tokens > 70%  → tomar tarea nueva o continuar módulo
+Tokens 40-70% → solo tareas de baja complejidad
+Tokens < 40%  → SOLO cerrar, documentar, relay
+⛔ Relay obligatorio antes del 40% consumido
+```
+
+---
+
+*skill-trabajo-mpat4.skill · V1_00 · 2026-05-24 · MPAT4*
+*Recuperación: https://drive.google.com/drive/folders/1Y02GMJ9CPp4_qmDliZkKQr0mP28rFjv0*
+*que has usado el formato de razonamiento adaptado por AGT*

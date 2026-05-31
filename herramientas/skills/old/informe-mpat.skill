@@ -1,0 +1,191 @@
+---
+name: informe-mpat
+description: >
+  Skill de consolidacion de informes MPAT por capa. Activar cuando el alumno
+  diga "hacer informe", "consolidar capa", "informe mpat", "siguiente capa",
+  "generar informe capa X", o cualquier variante que implique generar el
+  INFORME_CAPA_XX.md de una capa del proyecto MPAT.
+  La skill lee RESOLUCIONES_CONSOLIDADAS_V2_102.md como fuente unica,
+  usa el TEMPLATE fijo, genera el informe sin resumir ningun dato,
+  guarda en Drive y actualiza el INDICE.
+  NUNCA usar si RESOLUCIONES_CONSOLIDADAS_V2_102.md no existe en Drive
+  (ver PASO 0 — Consolidacion previa).
+---
+
+# MPAT — Skill de Informes por Capa
+
+## Proposito
+
+Cada alumno toma UNA capa pendiente del INDICE y genera su INFORME_CAPA_XX.md
+completo, sin resumir ningun dato. El estado vive en Drive, no en la memoria de Claude.
+
+**Regla absoluta: NUNCA resumir. Si el dato existe, va completo. Si no existe, [DATO FALTANTE].**
+
+---
+
+## Configuracion
+
+```
+FOLDER_FUENTE:
+    root: 1PAc9ZRapBhci0_de_Ve9hUimeR4BBHZ7
+    diagramas: 1DqBkrl3M2sPGAUoqa9EEYKrgZL0ox8DV
+    Frontera: 1ZEXWXaCOzsUAPPJzng06p7S1Gid3oEh_
+    legacy: 1mOVahw1_wFO02WWlmr8Q6DJUGePHcDC-
+    capas: 1NJwqb6jZxhvFfYo0agQn5bod4W6xfIBW
+    pendientes: 1CvayubQQZZL6tNFgbm72SuwQQTdfoEc5
+
+FOLDER_INFORMES: 1mcWRM1c3ILnLeQwQRydYFup1nlb2ztnL
+VERSION_FUENTE:  V2_102
+RES_RANGO:       RES.088 a RES.109
+```
+
+---
+
+## PASO 0 — Consolidacion previa (SOLO LA PRIMERA VEZ, UNA SESION)
+
+Antes de que cualquier alumno genere informes de capa, UNA sesion debe generar
+RESOLUCIONES_CONSOLIDADAS_V2_102.md. Esta es la fuente unica de verdad.
+
+```
+PASO 0.1 — Buscar en FOLDER_FUENTE todos los archivos:
+  RESOLUCIONES_MPAT_V2_*.md
+  Ordenar por numero de version ascendente.
+
+PASO 0.2 — Leer CADA archivo en orden. Para cada RES encontrada:
+  Extraer: numero RES, FUT, capa afectada, fecha, version, contenido completo.
+  NO resumir. Copiar la resolucion completa tal como esta en el archivo.
+
+PASO 0.3 — Generar RESOLUCIONES_CONSOLIDADAS_V2_102.md con estructura:
+  # RESOLUCIONES_CONSOLIDADAS_V2_102.md
+  ## RES.088 — [titulo]
+  [contenido completo]
+  ## RES.089 — [titulo]
+  [contenido completo]
+  ... hasta RES.109
+
+PASO 0.4 — Guardar en raiz de Drive (las carpetas rechazan escritura).
+  Titulo: RESOLUCIONES_CONSOLIDADAS_V2_102.md
+  El docente mueve el archivo a FOLDER_INFORMES.
+
+PASO 0.5 — Actualizar INDICE_INFORMES_MPAT.md:
+  Campo "Archivo consolidado" → COMPLETADO
+```
+
+---
+
+## Flujo relay — INICIO DE SESION DE INFORME
+
+Cuando el alumno dice "hacer informe" o similar:
+
+```
+PASO 1 — IDENTIFICACION
+  Preguntar: "Nombre o email para registrar tu autoria en el informe."
+  Guardar como ALUMNO_ID.
+
+PASO 2 — LEER INDICE
+  Buscar INDICE_INFORMES_MPAT.md en FOLDER_INFORMES.
+  Identificar primera capa con Estado=PENDIENTE.
+  Informar: "Trabajare sobre Capa [XX] — [nombre]"
+  Si todas estan COMPLETADO: informar y detener.
+
+PASO 3 — VERIFICAR FUENTE CONSOLIDADA
+  Buscar RESOLUCIONES_CONSOLIDADAS_V2_102.md en FOLDER_INFORMES.
+  Si NO existe: DETENER y avisar al alumno que primero debe ejecutarse PASO 0.
+  Si existe: continuar.
+
+PASO 4 — CARGAR FUENTES
+  Leer RESOLUCIONES_CONSOLIDADAS_V2_102.md completo.
+  Leer ARQUITECTURA_base_V2_102.md de FOLDER_FUENTE.
+  Leer TEMPLATE_INFORME_CAPA.md de FOLDER_INFORMES.
+  NO cargar otros archivos (economia de tokens).
+
+PASO 5 — FILTRAR RES DE LA CAPA
+  De RESOLUCIONES_CONSOLIDADAS extraer TODAS las RES que mencionen
+  "Capa [XX]" o el componente de esa capa.
+  Listar antes de escribir: "Esta capa es afectada por: RES.NNN, RES.NNN, ..."
+  Si alguna RES es ambigua: incluirla y marcar [VERIFICAR ASIGNACION DE CAPA].
+
+PASO 6 — GENERAR INFORME
+  Usar TEMPLATE_INFORME_CAPA.md como estructura fija. NO modificar secciones.
+  Completar CADA seccion del template para CADA RES identificada en PASO 5.
+  NUNCA resumir. NUNCA saltear secciones. NUNCA inventar datos.
+  Si un dato no figura en la fuente: [DATO FALTANTE — no encontrado en fuente].
+
+PASO 7 — GUARDAR
+  Titulo: INFORME_CAPA_[XX]_V2_102.md
+  Subir a raiz de Drive (las carpetas rechazan escritura directa).
+  El docente mueve a FOLDER_INFORMES.
+
+PASO 8 — ACTUALIZAR INDICE
+  Leer INDICE_INFORMES_MPAT.md actual.
+  Actualizar fila de la capa completada:
+    Estado → COMPLETADO
+    Alumno → ALUMNO_ID
+    Fecha  → fecha actual
+    Archivo → INFORME_CAPA_[XX]_V2_102.md
+  Guardar nueva version: INDICE_INFORMES_MPAT_v[N].md a raiz de Drive.
+  (versionar el indice para no perder historial)
+
+PASO 9 — EVALUAR CONTINUACION
+  Tokens > 60% restantes → volver a PASO 2 con siguiente capa PENDIENTE
+  Tokens < 60% restantes → PROTOCOLO DE TRASPASO
+```
+
+---
+
+## Protocolo de traspaso
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  MPAT INFORMES · TRASPASO AL SIGUIENTE ALUMNO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Sesion cerrada por: [ALUMNO_ID]
+  Capa completada:    Capa [XX] — [nombre]
+  Archivo generado:   INFORME_CAPA_[XX]_V2_102.md
+  Indice actualizado: INDICE_INFORMES_MPAT_v[N].md
+  Proxima capa:       Capa [YY] — [nombre]
+
+  COPIAR AL GRUPO:
+  "Termine informe Capa [XX].
+   Archivo: INFORME_CAPA_[XX]_V2_102.md en raiz Drive.
+   Proxima capa libre: [YY].
+   El siguiente puede arrancar."
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+---
+
+## Reglas de calidad — NUNCA violar
+
+| Regla | Consecuencia si se viola |
+|---|---|
+| NUNCA resumir ningun dato | Detener, regenerar la seccion completa |
+| NUNCA inventar datos ausentes | Marcar [DATO FALTANTE], continuar |
+| Usar siempre TEMPLATE_INFORME_CAPA.md | Sin template = informe invalido |
+| Registrar ALUMNO_ID y fecha en cada informe | Sin firma = no valido |
+| Actualizar INDICE despues de cada capa | Sin actualizacion = capa no cerrada |
+| RESOLUCIONES_CONSOLIDADAS es la fuente unica | No leer RESOLUCIONES_MPAT_V2_*.md individuales en sesion de informe |
+| Un alumno por capa | Verificar INDICE antes de iniciar |
+
+---
+
+## Como instalar esta skill
+
+1. Copiar este archivo completo.
+2. Guardarlo en tu carpeta de skills de Claude con nombre: informe-mpat/SKILL.md
+3. Reiniciar Claude.
+4. Para activar: decir "hacer informe mpat" o "consolidar capa mpat".
+
+---
+
+## Referencias en Drive
+
+- INDICE_INFORMES_MPAT.md → control de estado
+- TEMPLATE_INFORME_CAPA.md → estructura fija del informe
+- RESOLUCIONES_CONSOLIDADAS_V2_102.md → fuente unica (generar en PASO 0)
+- ARQUITECTURA_base_V2_102.md → contexto arquitectural final
+
+---
+
+*informe-mpat SKILL · AGT 2026 · ariel.garcia.traba@gmail.com*
+*que has usado el formato de razonamiento adaptado por AGT*
