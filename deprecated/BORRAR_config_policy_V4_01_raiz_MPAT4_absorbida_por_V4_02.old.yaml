@@ -1,0 +1,70 @@
+# config_policy.yaml
+# Autor: clases.andrea.biologia@gmail.com · 2026-05-13
+# Copiado a raíz por: ariel.garcia.traba@gmail.com · 2026-05-13
+# Módulo: governance_engine/ · Versión: V4_01
+# Sistema: MPAT4 — Infraestructura Cognitiva Distribuida
+# FUENTE ÚNICA DE VERDAD — P4. Ningún módulo hardcodea parámetros.
+# INC-002 resuelto: este archivo debe estar en raíz para que event_bus.py lo lea.
+
+event_bus:
+  max_retries: 3
+  handler_timeout_seconds: 30
+  maxlen: 10000
+  dlq_alert_threshold: 100
+  consumer_group: "mpat4_consumers"
+  block_ms: 1000
+
+governance:
+  budget:
+    default_budget_tokens: 100000
+    warning_threshold_pct: 0.80
+    critical_threshold_pct: 0.95
+    budget_redis_ttl_seconds: 86400
+    conservative_mode_budget: 0
+
+  security:
+    zero_trust: true
+    require_tenant_id: true
+    audit_all_decisions: true
+    max_policy_eval_ms: 5
+
+  tenant:
+    isolation: strict
+    allow_cross_tenant: false
+
+  tools:
+    mcp_protocol_version: "2025"
+    a2a_protocol_version: "1.0"
+    allowed_runtimes:
+      - "nanvoms"
+      - "unikraft"
+      - "firecracker"
+    # Docker PROHIBIDO — P3 + P7
+
+  relay:
+    min_tokens_before_relay_pct: 0.40
+    warn_tokens_pct: 0.60
+
+memory:
+  redis_url: "redis://localhost:6379"
+  redis_db: 0
+  connection_pool_size: 10
+  max_fragments_per_tenant: 1000
+  fragment_ttl_seconds: 604800
+  warm_start_top_n: 5
+
+session_scheduler:
+  max_session_duration_seconds: 3600
+  warm_pool_size: 3
+  cold_boot_timeout_seconds: 10
+  checkpoint_interval_seconds: 300
+  max_concurrent_sessions_per_tenant: 5
+
+observability:
+  otel_enabled: true
+  otel_service_name: "mpat4"
+  log_level: "INFO"
+
+runtime:
+  min_memory_mb: 128
+  python_version: "3.14"

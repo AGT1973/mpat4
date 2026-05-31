@@ -1,0 +1,58 @@
+# config_policy.yaml
+# Autor: clases.andrea.biologia@gmail.com · 2026-05-13
+# Módulo: governance_engine/ · Versión: V4_01
+# Sistema: MPAT4 — Infraestructura Cognitiva Distribuida
+# FUENTE ÚNICA DE VERDAD — P4. Ningún módulo hardcodea parámetros operativos.
+
+event_bus:
+  max_retries: 3
+  handler_timeout_seconds: 30
+  maxlen: 10000
+  dlq_alert_threshold: 100
+  consumer_group: "mpat4_consumers"
+  block_ms: 1000
+
+governance:
+  budget:
+    default_budget_tokens: 100000
+    warning_threshold_pct: 0.80      # alerta al 80%
+    critical_threshold_pct: 0.95     # teardown al 100% — INV-GOV-001
+    budget_redis_ttl_seconds: 86400  # 24hs — presupuesto diario por tenant
+    conservative_mode_budget: 0      # Redis no disponible → budget=0
+
+  security:
+    zero_trust: true
+    require_tenant_id: true          # INV-GOV-005
+    audit_all_decisions: true        # INV-GOV-002 / P5
+    max_policy_eval_ms: 5            # DEC-015
+
+  tenant:
+    isolation: strict                # namespace Redis por tenant_id — P3
+    allow_cross_tenant: false
+
+  tools:
+    mcp_protocol_version: "2025"
+    a2a_protocol_version: "1.0"
+    allowed_runtimes:
+      - "nanvoms"
+      - "unikraft"
+      - "firecracker"
+    # Docker PROHIBIDO — P3 + P7
+
+  relay:
+    min_tokens_before_relay_pct: 0.40   # relay obligatorio al 40% restante
+    warn_tokens_pct: 0.60
+
+memory:
+  redis_url: "redis://localhost:6379"
+  redis_db: 0
+  connection_pool_size: 10
+
+observability:
+  otel_enabled: true
+  otel_service_name: "mpat4-governance"
+  log_level: "INFO"
+
+runtime:
+  min_memory_mb: 128     # NUNCA menos — GC CPython falla por debajo
+  python_version: "3.14"
