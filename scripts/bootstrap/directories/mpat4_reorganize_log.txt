@@ -1,0 +1,211 @@
+MPAT4 Reorganización — 2026-05-20T18:41:51.456321
+Modo: EJECUCIÓN REAL
+============================================================
+
+[18:41:46]═══ESTADO ACTUAL DE LA ESTRUCTURA
+[18:41:47]     contracts  → 2 archivos
+[18:41:47]     core  → 2 archivos
+[18:41:47]     core\cognition  → 2 archivos
+[18:41:47]     core\cognition\agents  → 2 archivos
+[18:41:47]     core\cognition\cognition_runtime  → 2 archivos
+[18:41:47]     core\cognition\context  → 2 archivos
+[18:41:47]     core\cognition\kernel  → 2 archivos
+[18:41:47]     core\cognition\orchestration  → 2 archivos
+[18:41:47]     core\cognition\planning  → 2 archivos
+[18:41:47]     core\cognition\reasoning  → 2 archivos
+[18:41:47]     core\event_bus  → 2 archivos
+[18:41:47]     core\event_bus\brokers  → 2 archivos
+[18:41:47]     core\event_bus\dead_letter  → 2 archivos
+[18:41:47]     core\event_bus\event_replay  → 2 archivos
+[18:41:47]     core\event_bus\event_sourcing  → 2 archivos
+[18:41:47]     core\event_bus\persistence  → 2 archivos
+[18:41:47]     core\event_bus\streams  → 2 archivos
+[18:41:47]     core\event_bus\subscriptions  → 2 archivos
+[18:41:47]     core\execution_graph  → 2 archivos
+[18:41:47]     core\execution_graph\dag_engine  → 2 archivos
+[18:41:47]     core\execution_graph\distributed_execution  → 2 archivos
+[18:41:47]     core\execution_graph\planner  → 2 archivos
+[18:41:47]     core\execution_graph\task_router  → 2 archivos
+[18:41:47]     core\federation  → 2 archivos
+[18:41:47]     core\federation\cluster_sync  → 2 archivos
+[18:41:47]     core\federation\federated_memory  → 2 archivos
+[18:41:47]     core\federation\peer_discovery  → 2 archivos
+[18:41:47]     core\federation\relay_exchange  → 2 archivos
+[18:41:47]     core\federation\remote_execution  → 2 archivos
+[18:41:47]     core\federation\trust_exchange  → 2 archivos
+[18:41:47]     core\governance  → 2 archivos
+[18:41:47]     core\governance\audit  → 2 archivos
+[18:41:47]     core\governance\budget_engine  → 2 archivos
+[18:41:47]     core\governance\compliance  → 2 archivos
+[18:41:47]     core\governance\economics  → 2 archivos
+[18:41:47]     core\governance\permissions  → 2 archivos
+[18:41:47]     core\governance\policies  → 2 archivos
+[18:41:47]     core\governance\runtime_limits  → 2 archivos
+[18:41:47]     core\governance\tenant_isolation  → 2 archivos
+[18:41:47]     core\governance\trust  → 2 archivos
+[18:41:47]     core\memory  → 2 archivos
+[18:41:47]     core\memory\consolidation  → 2 archivos
+[18:41:47]     core\memory\embedding_pipeline  → 2 archivos
+[18:41:47]     core\memory\episodic  → 2 archivos
+[18:41:47]     core\memory\governance_memory  → 2 archivos
+[18:41:47]     core\memory\graph_memory  → 2 archivos
+[18:41:47]     core\memory\operational  → 2 archivos
+[18:41:47]     core\memory\relay_memory  → 2 archivos
+[18:41:47]     core\memory\retrieval  → 2 archivos
+[18:41:47]     core\memory\semantic  → 2 archivos
+[18:41:48]     core\observability  → 2 archivos
+[18:41:48]     core\observability\cognitive_metrics  → 2 archivos
+[18:41:48]     core\observability\compliance_views  → 2 archivos
+[18:41:48]     core\observability\explainability  → 2 archivos
+[18:41:48]     core\observability\session_replay  → 2 archivos
+[18:41:48]     core\observability\telemetry  → 2 archivos
+[18:41:48]     core\observability\thought_trace  → 2 archivos
+[18:41:48]     core\observability\tracing  → 2 archivos
+[18:41:48]     core\runtime_core  → 2 archivos
+[18:41:48]     core\runtime_core\hydration  → 2 archivos
+[18:41:48]     core\runtime_core\hypervisor  → 2 archivos
+[18:41:48]     core\runtime_core\microvm  → 2 archivos
+[18:41:48]     core\runtime_core\migration  → 2 archivos
+[18:41:48]     core\runtime_core\runtime_state  → 2 archivos
+[18:41:48]     core\runtime_core\sandbox  → 2 archivos
+[18:41:48]     core\runtime_core\scheduler  → 2 archivos
+[18:41:48]     core\runtime_core\unikernel  → 2 archivos
+[18:41:48]     core\sandboxing  → 2 archivos
+[18:41:48]     core\sandboxing\filesystem_policies  → 2 archivos
+[18:41:48]     core\sandboxing\firecracker  → 2 archivos
+[18:41:48]     core\sandboxing\gvisor  → 2 archivos
+[18:41:48]     core\sandboxing\libkrun  → 2 archivos
+[18:41:48]     core\sandboxing\network_policies  → 2 archivos
+[18:41:48]     core\sandboxing\seccomp  → 2 archivos
+[18:41:48]     deployment  → 2 archivos
+[18:41:48]     deployment\bare_metal  → 2 archivos
+[18:41:48]     deployment\cluster  → 2 archivos
+[18:41:48]     deployment\edge  → 2 archivos
+[18:41:48]     deployment\lab  → 2 archivos
+[18:41:48]     deployment\latam_low_resource  → 2 archivos
+[18:41:48]     deployment\single_node  → 2 archivos
+[18:41:48]     deployment\university  → 2 archivos
+[18:41:48]     deprecated  → 2 archivos
+[18:41:48]     directories  → 8 archivos
+[18:41:48]     docs  → 2 archivos
+[18:41:48]     docs\architecture  → 2 archivos
+[18:41:48]     docs\business  → 2 archivos
+[18:41:48]     docs\internal  → 2 archivos
+[18:41:48]     docs\public  → 3 archivos
+[18:41:48]     ecosystem  → 2 archivos
+[18:41:48]     ecosystem\capabilities  → 2 archivos
+[18:41:48]     ecosystem\cards  → 2 archivos
+[18:41:48]     ecosystem\cards\agent_cards  → 2 archivos
+[18:41:48]     ecosystem\cards\skill_cards  → 2 archivos
+[18:41:48]     ecosystem\cards\tenant_cards  → 2 archivos
+[18:41:48]     ecosystem\connectors  → 2 archivos
+[18:41:48]     ecosystem\discovery  → 2 archivos
+[18:41:48]     ecosystem\manifests  → 2 archivos
+[18:41:48]     ecosystem\registries  → 2 archivos
+[18:41:48]     ecosystem\registries\agent_registry  → 2 archivos
+[18:41:48]     ecosystem\registries\skill_registry  → 2 archivos
+[18:41:48]     ecosystem\registries\tenant_registry  → 2 archivos
+[18:41:48]     ecosystem\skills  → 2 archivos
+[18:41:48]     ecosystem\skills\enterprise  → 2 archivos
+[18:41:48]     ecosystem\skills\personal  → 2 archivos
+[18:41:49]     ecosystem\skills\sandboxed  → 2 archivos
+[18:41:49]     ecosystem\skills\shared  → 2 archivos
+[18:41:49]     ecosystem\skills\team  → 2 archivos
+[18:41:49]     education  → 2 archivos
+[18:41:49]     education\evaluation  → 2 archivos
+[18:41:49]     education\investigation_gaps  → 2 archivos
+[18:41:49]     education\lab_guides  → 2 archivos
+[18:41:49]     education\research_tracks  → 2 archivos
+[18:41:49]     education\student_relays  → 2 archivos
+[18:41:49]     education\teaching_material  → 2 archivos
+[18:41:49]     providers  → 2 archivos
+[18:41:49]     providers\anthropic  → 2 archivos
+[18:41:49]     providers\cost_engine  → 2 archivos
+[18:41:49]     providers\deepseek  → 2 archivos
+[18:41:49]     providers\gemini  → 2 archivos
+[18:41:49]     providers\local_models  → 2 archivos
+[18:41:49]     providers\nanobanana  → 2 archivos
+[18:41:49]     providers\ollama  → 2 archivos
+[18:41:49]     providers\openai  → 2 archivos
+[18:41:49]     providers\provider_health  → 2 archivos
+[18:41:49]     providers\provider_routing  → 2 archivos
+[18:41:49]     providers\stability  → 2 archivos
+[18:41:49]     relay_system  → 2 archivos
+[18:41:49]     relay_system\relay_docs  → 2 archivos
+[18:41:49]     relay_system\relay_governance  → 2 archivos
+[18:41:49]     relay_system\relay_memory  → 2 archivos
+[18:41:49]     relay_system\relay_pointer  → 2 archivos
+[18:41:49]     relay_system\relay_protocol  → 2 archivos
+[18:41:49]     relay_system\relay_runtime  → 2 archivos
+[18:41:49]     research  → 2 archivos
+[18:41:49]     research\benchmarks  → 2 archivos
+[18:41:49]     research\experiments  → 2 archivos
+[18:41:49]     research\fut  → 2 archivos
+[18:41:49]     research\papers  → 2 archivos
+[18:41:49]     resoluciones  → 2 archivos
+[18:41:49]     schemas  → 2 archivos
+[18:41:49]     scripts  → 2 archivos
+[18:41:49]     scripts\bootstrap  → 2 archivos
+[18:41:49]     scripts\maintenance  → 2 archivos
+[18:41:49]     scripts\migration  → 2 archivos
+[18:41:49]     system_state  → 2 archivos
+[18:41:49]     system_state\cluster  → 2 archivos
+[18:41:49]     system_state\governance  → 2 archivos
+[18:41:49]     system_state\relay  → 2 archivos
+[18:41:49]     system_state\runtime  → 2 archivos
+[18:41:49]     system_state\tenants  → 2 archivos
+[18:41:49]     tests  → 2 archivos
+[18:41:49]     tests\integration  → 2 archivos
+[18:41:49]     tests\runtime  → 2 archivos
+[18:41:49]     tests\security  → 2 archivos
+[18:41:49]     tests\unit  → 2 archivos
+[18:41:49]   Total dirs: 156   Con archivos: 156   Completamente vacíos: 0
+[18:41:49]   
+[18:41:49]═══MPAT4 — PLAN DE REORGANIZACIÓN
+[18:41:49]   Base: I:\Mi unidad\MPAT\MPAT4
+[18:41:49]   Modo: EJECUCIÓN REAL
+[18:41:49]   ============================================================
+[18:41:49]   
+[18:41:49]═══[1/5] RENOMBRES
+[18:41:49] ✓ RENOMBRAR: core/runtime_core  →  core/runtime
+[18:41:49] ✓ RENOMBRAR: research/fut  →  research/futures
+[18:41:50]   
+[18:41:50]═══[2/5] MOVER CONTENIDO MAL UBICADO
+[18:41:50] ✓ MOVER: core/runtime/sandbox  →  core/sandboxing  (2 items)
+[18:41:50] ✓ MOVER: core/runtime/migration  →  scripts/migration  (2 items)
+[18:41:50] ✓ CREAR (para recibir): relay/docs
+[18:41:50] ✓ MOVER: relay_system/relay_docs  →  relay/docs  (2 items)
+[18:41:50] ✓ CREAR (para recibir): relay/governance
+[18:41:50] ✓ MOVER: relay_system/relay_governance  →  relay/governance  (2 items)
+[18:41:50] ✓ CREAR (para recibir): relay/memory
+[18:41:50] ✓ MOVER: relay_system/relay_memory  →  relay/memory  (2 items)
+[18:41:50] ✓ CREAR (para recibir): relay/pointer
+[18:41:50] ✓ MOVER: relay_system/relay_pointer  →  relay/pointer  (2 items)
+[18:41:50] ✓ CREAR (para recibir): relay/protocol
+[18:41:50] ✓ MOVER: relay_system/relay_protocol  →  relay/protocol  (2 items)
+[18:41:50] ✓ CREAR (para recibir): relay/runtime
+[18:41:50] ✓ MOVER: relay_system/relay_runtime  →  relay/runtime  (2 items)
+[18:41:50] ✓ CREAR (para recibir): relay/active
+[18:41:50] ✓ MOVER: system_state/relay  →  relay/active  (2 items)
+[18:41:50]   
+[18:41:50]═══[3/5] ARCHIVAR EN deprecated/ (contenido no eliminar)
+[18:41:50] ✓ ARCHIVAR → deprecated/cognition_runtime  (2 archivos) — Razón: concepto erróneo: runtime no pertenece a cognition
+[18:41:50] ✓ ARCHIVAR → deprecated/business  (2 archivos) — Razón: sin propósito definido en sistema académico
+[18:41:50] ✓ ARCHIVAR → deprecated/capabilities  (2 archivos) — Razón: nombre ambiguo, sin contenido real
+[18:41:50] ✓ ARCHIVAR → deprecated/manifests  (2 archivos) — Razón: sin propósito definido — contenido va en contracts/ o ecosystem/cards/
+[18:41:50]   
+[18:41:50]═══[4/5] CREAR DIRECTORIOS FALTANTES
+[18:41:50] ✓ CREAR: relay/temporal
+[18:41:50]   
+[18:41:50]═══[5/5] ELIMINAR REDUNDANTES
+[18:41:50] ⚠ ELIMINAR omitido — tiene 2 archivos sin mover: relay_system
+[18:41:50] ⚠    └ Primero archivar_en_deprecated('relay_system') o mover su contenido.
+[18:41:50] ✓ ELIMINADO: system_state/relay
+[18:41:51] ✓ ELIMINADO: core/runtime/sandbox
+[18:41:51] ✓ ELIMINADO: core/runtime/migration
+[18:41:51]   
+[18:41:51]═══[6/6] GENERAR tree_vfolders_v2.json
+[18:41:51] ✓ Árbol limpio guardado: I:\Mi unidad\MPAT\tree_vfolders_v2.json
+[18:41:51]   
+[18:41:51]   ============================================================
+[18:41:51] ✓ REORGANIZACIÓN COMPLETADA
